@@ -1,3 +1,5 @@
+module TP1 where
+
 --import qualified Data.List
 --import qualified Data.Array
 --import qualified Data.Bits
@@ -17,22 +19,9 @@ cities :: RoadMap -> [City]
 cities = undefined -- modifiy this line to implement the solution, for each exercise not solved, leave the function definition like this
 
 --2
-areAdjacent :: RoadMap -> City -> City -> Bool -- First parameter is the Graph, second and third parameters are the cities names that we will
-                                               -- find out if they are adjacent (have a direct path inbetween them), in this case, if there's a tuple
-                                               -- with both cities. It returns True if they are adjacent, and False if they are not.
-
-areAdjacent _ c1 c2 | c1 == c2 = False -- Returns False if the cities from the function parameters are the same since they will never be adjacent
-
-areAdjacent [] _ _ = False  -- If the RoadMap is empty, returns False, could happen when the RoadMap starts empty 
-                            -- or when no direct path was found inbetween both cities, or one city didn't exist, or both cities are not adjacent
-
-areAdjacent ((rc1, rc2, _):map) c1 c2 -- saves on rc1 and rc2 the cities of the first tuple of the list
-
-        | (((rc1 == c1) && (rc2 == c2)) || ((rc2 == c1) && (rc1 == c2))) = True -- if both cities of the tuple are the same as the cities given in 
-                                                                                -- the function parameters, then a direct path was found and returns True
-
-        | otherwise = areAdjacent map c1 c2 -- if this tuple was not a  direct path inbetween the cities of the function parameters, passes the rest of the
-                                            -- list and does everything again
+areAdjacent :: RoadMap -> City -> City -> Bool 
+areAdjacent map city1 city2 =
+        any (\(c1, c2, _)-> (c1 == city1 && c2 == city2) || (c1 == city2 && c2 == city1)) map
 
 --3
 distance :: RoadMap -> City -> City -> Maybe Distance
@@ -45,6 +34,12 @@ adjacent ((rc1, rc2, dist):map) c1
         | rc1 == c1 = (rc2, dist) : adjacent map c1
         | rc2 == c1 = (rc1, dist) : adjacent map c1
         | otherwise = adjacent map c1 
+
+
+--adjacent :: RoadMap -> City -> [(City, Distance)]
+--adjacent roadmap city = [(if city1 == city then city2 else city1, dist) | (city1, city2, dist) <- roadmap, city1 == city || city2 == city]
+--qual seria melhor
+
 
 --5
 pathDistance :: RoadMap -> Path -> Maybe Distance
