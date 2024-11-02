@@ -1,8 +1,8 @@
 module TP1 where
 
---import qualified Data.List
---import qualified Data.Array
---import qualified Data.Bits
+import qualified Data.List
+import qualified Data.Array
+import qualified Data.Bits
 
 -- PFL 2024/2025 Practical assignment 1
 
@@ -13,6 +13,37 @@ type Path = [City]
 type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
+type AdjList = [(City, [(City, Distance)])]
+
+
+--Converters -----------------------------------
+
+convertToAdjList :: RoadMap -> AdjList
+convertToAdjList = foldl addConnection []
+
+updateAdjList :: City -> City -> Distance -> AdjList -> AdjList
+updateAdjList city neighbor distance adjList =
+    case lookup city adjList of
+        Just neighbors -> (city, (neighbor, distance) : neighbors) : filter (\(c, _) -> c/= city) adjList
+        Nothing -> (city, [(neighbor, distance)]) : adjList
+
+addConnection :: AdjList -> (City, City, Distance) -> AdjList
+addConnection adjList (city1, city2, distance) =
+    let 
+        adjList1 = updateAdjList city1 city2 distance adjList
+        adjList2 = updateAdjList city2 city1 distance adjList1
+    in adjList2 
+
+convertToRoadMap :: AdjList -> RoadMap
+convertToRoadMap adjList = removeDuplicates [(city, neighbor, distance) | (city, neighbors) <- adjList, (neighbor, distance) <- neighbors]
+
+removeDuplicates :: RoadMap -> RoadMap
+removeDuplicates [] = []
+removeDuplicates ((city1, city2, distance):edges) 
+    | (city2, city1, distance) `elem` edges = removeDuplicates edges
+    | otherwise = (city1, city2, distance) : removeDuplicates edges
+
+--End of converters--------------------------
 
 --1
 cities :: RoadMap -> [City]
@@ -46,10 +77,18 @@ pathDistance :: RoadMap -> Path -> Maybe Distance
 pathDistance = undefined
 
 --6
-rome :: RoadMap -> [City]
-rome [] = []
-rome ((c1,c2,_):map) = undefined
+countAdjacent :: AdjList -> [(City,Int)]
+countAdjacent list = map(\(city,adjacent)->(city, length adjacent)) list
 
+rome :: RoadMap -> [City]
+rome rmap = 
+     let
+        list = convertToAdjList rmap
+        count = countAdjacent list
+        maxC = maximum $ map snd count
+     in
+        [city | (city, count) <- count, count == maxC]
+        
 --7
 isStronglyConnected :: RoadMap -> Bool
 isStronglyConnected = undefined
