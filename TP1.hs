@@ -95,7 +95,47 @@ isStronglyConnected = undefined
 
 --8
 shortestPath :: RoadMap -> City -> City -> [Path]
-shortestPath = undefined
+shortestPath roadMap start end
+    | start == end = [[start]]  -- Return a single path containing just the start city
+    | otherwise =
+        let adjList = convertToAdjList roadMap
+            (minDistance, paths) = findAllPaths adjList start end
+        in filter (\path -> calculateDistance adjList path == minDistance) paths
+
+-- Helper function to find all paths
+findAllPaths :: AdjList -> City -> City -> (Distance, [Path])
+findAllPaths adjList start end = 
+    let allPaths = dfs adjList start end [] 0
+        minDistance = minimum (map (calculateDistance adjList) allPaths)
+    in (minDistance, filter (\path -> calculateDistance adjList path == minDistance) allPaths)
+
+-- Depth-first search to find all paths
+dfs :: AdjList -> City -> City -> Path -> Distance -> [Path]
+dfs adjList current destination visited distance
+    | current == destination = [reverse (current : visited)]
+    | current `elem` visited = []
+    | otherwise =
+        let neighbors = lookupNeighbors current adjList
+            newVisited = current : visited
+        in concat [dfs adjList neighbor destination newVisited (distance + dist) | (neighbor, dist) <- neighbors]
+
+-- Lookup neighbors of a city
+lookupNeighbors :: City -> AdjList -> [(City, Distance)]
+lookupNeighbors city adjList = case lookup city adjList of
+    Just neighbors -> neighbors
+    Nothing -> []
+
+-- Calculate distance of a path
+calculateDistance :: AdjList -> Path -> Distance
+calculateDistance _ [] = 0
+calculateDistance adjList (city1:city2:rest) =
+    case lookup city1 adjList of
+        Just neighbors ->
+            case lookup city2 neighbors of
+                Just dist -> dist + calculateDistance adjList (city2:rest)
+                Nothing -> maxBound :: Int  -- No connection found
+        Nothing -> maxBound :: Int  -- City not found
+calculateDistance _ _ = 0  -- If only one city in the path, distance is zero
 
 --9
 travelSales :: RoadMap -> Path
@@ -107,7 +147,7 @@ tspBruteForce = undefined -- only for groups of 3 people; groups of 2 people: do
 
 -- Some graphs to test your work
 gTest1 :: RoadMap
-gTest1 = [("7","6",1),("8","2",2),("6","5",2),("0","1",4),("2","5",4),("8","6",6),("2","3",7),("7","8",7),("0","7",8),("1","2",8),("3","4",9),("5","4",10),("1","7",11),("3","5",14)]
+gTest1 = [("7","6",1),("8","2",20),("6","5",2),("0","1",4),("2","5",4),("8","6",6),("2","3",7),("7","8",7),("0","7",8),("1","2",8),("3","4",9),("5","4",10),("1","7",11),("3","5",14)]
 
 gTest2 :: RoadMap
 gTest2 = [("0","1",10),("0","2",15),("0","3",20),("1","2",35),("1","3",25),("2","3",30)]
