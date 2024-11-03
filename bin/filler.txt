@@ -1,1 +1,0 @@
-ghc Main.hs && mv Main bin/ && mv *.hi bin/ && mv *.o bin/ && ./bin/Main
